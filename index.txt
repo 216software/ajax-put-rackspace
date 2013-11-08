@@ -1,0 +1,69 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++
+Upload files directly to Rackspace from the browser
++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+We're using the fantastic `gunicorn <http://gunicorn.org>` WSGI server
+with regular plain-jane vanilla sync workers and we're building a web
+application where users upload lots of really big files.
+
+So on busy days, our web application could get locked up when too many
+users try to upload too many really big files.
+
+Remember that with a synchronous worker, that means when a user makes a
+request, that request completely ties up the back-end worker process.
+
+So in the worst case, on a busy day, our application could become very
+unresponsive.
+
+We could always just spin up a ton of web application boxes, so that no
+matter how busy the application gets, we always have slack, but that's
+wasteful.  We don't like paying a lot for application hosting.
+
+
+
+
+
+What about using async workers?
+===============================
+
+
+Here's the typical use case for async workers: a request comes in and
+and you need to talk to some remote API before you can reply.
+
+And that API sometimes takes a second to respond.
+
+So, you use gevent (or anybody else) to talk to that remote API.
+
+While the same process is waiting for a response, it goes back to handling
+requests.
+
+Under the hood, these async libraries all monkey-patch stuff like the
+socket library, so that when you read or write from a socket, you
+automatically yield.
+
+It would be nice if I could use something like gevent so that while a
+web worker is blocking on IO, while the data is streaming from the
+browser to the server, the web worker could still respond other requests
+in the meanwhile.
+
+Here's the problem that we ran into (which is likely totally fixable, or
+even never was broken).
+
+We're using the excellent werkzeug library to parse file uploads.  It
+internally pulls data from the socket named "wsgi.input" passed in with
+the WSGI environ.
+
+But the werkzeug code doesn't know it is being run inside a gunicorn
+async gevent worker.
+
+We couldn't figure out a nice way to force the werkzeug request object
+to intermittently yield while reading from the wsgi.input socket.
+
+
+
+
+
+
+
+.. vim: set syntax=rst:
