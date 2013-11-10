@@ -5,29 +5,9 @@ import logging
 import uuid
 import wsgiref.simple_server
 
-
 import pyrax
 
 log = logging.getLogger('apfur')
-
-"""
-
-1.  Create a container on rackspace cloudfiles.
-
-2.  Use python to set metadata on that container to allow CORS.
-
-3.  Write some python code to build a temp URL for the PUT method.
-
-4.  Write HTML to build a simple input type=file widget.
-
-5.  Write some javascript so that when a user picks a file with the file
-    input tag, we use a `FileReader <https://developer.mozilla.org/en-US/docs/Web/API/FileReader>`
-    to read the contents of the file into a buffer.
-
-6.  Use some more javascript to do an ajax PUT to the temp URL created
-    in step 3.
-
-"""
 
 def parse_args():
 
@@ -92,9 +72,10 @@ if __name__ == '__main__':
         args.rackspace_API_key)
 
     # Tell this container to accept AJAX requests from
-    # sprout.216software.com.
+    # http://sprout.216software.com.
+
     uploads_container.set_metadata({
-        'Access-Control-Allow-Origin': 'sprout.216software.com'})
+        'Access-Control-Allow-Origin': 'http://sprout.216software.com:8765'})
 
     filename = str(uuid.uuid4())
 

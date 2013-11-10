@@ -76,62 +76,43 @@ $(document).ready(function () {{
 
                                 if (evt.lengthComputable) {{
 
-                                    var percentComplete = evt.loaded /
-    evt.total;
+                                    var percentComplete = evt.loaded / evt.total;
 
-                                    my_progress_bar.css('width',
+                                    console.debug('percentComplete: ' + percentComplete);
+
+                                    $("#progress-bar div.progress-bar").css('width',
                                         String(100*percentComplete) + "%");
 
                                 }}
-}},
+                            }},
+
                             false);
 
                         return xhr;
-}},
+                        }},
 
-                    url: $(input_file_node).data('upload_url'),
+                    url: '{0}',
                     type: 'PUT',
                     cache: false,
                     data: fr.result,
-                    contentType: file_type,
+                    // contentType: file_type,
                     processData: false,
 
                     success: function (data) {{
-
-                        // Now tell the server that the upload was a
-    success.
-                        $.ajax({{
-                            url: '/track-rackspace-upload',
-                            type: 'POST',
-                            data: {{
-                                container: binder_id,
-                                object_name: file_uuid,
-                                pretty_filename: file_name,
-                                binder_id: binder_id,
-                                folder_id: folder_id,
-                                file_type: file_type}},
-
-                            success: function (data) {{
-
-                                // Now reload the page!
-                                window.location.reload();
-
-                            }}
-                        }});
-
+                        console.debug('Upload complete -- do what you want here');
                     }},
 
                     error: function (data) {{
                     }}
-                    }});
+                }});
 
-                }};
+            }};
 
-}})(this.files[0], this);
+        }})(this.files[0], this);
 
         fr.readAsArrayBuffer(this.files[0]);
 
-}});
+    }});
 
 }});
 </script>
