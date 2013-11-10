@@ -2,24 +2,75 @@
 Upload files directly to Rackspace from the browser
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 
+Background
+==========
+
+We need to let users take a file (possibly a really big file) from their
+hard drive and push it to the `Rackspace Cloud Files storage service
+<http://www.rackspace.com/cloud/files/>`.
+
+Our solution
+============
+
+**warning: this depends on HTML5 stuff!**
+
+1.  Create a container on rackspace cloudfiles.
+
+2.  Use python to set metadata on that container to allow CORS.
+
+3.  Write some python code to build a temp URL for the PUT method.
+
+4.  Write HTML to build a simple input type=file widget.
+
+5.  Write some javascript so that when a user picks a file with the file
+    input tag, we use a `FileReader <https://developer.mozilla.org/en-US/docs/Web/API/FileReader>`
+    to read the contents of the file into a buffer.
+
+6.  Use some more javascript to do an ajax PUT to the temp URL created
+    in step 3.
+
+
+The conventional approach
+=========================
+
+The typical solution involves writing some web application code to
+accept the file upload from the browser, and then upload it up to
+rackspace.
+
+Maybe to be a little fancier, just the first half happens during during
+the web request, and some unrelated background process uploads the file
+to rackspace later.
+
+
+
+
+
+
+
+The risk of the conventional approach
+=====================================
 
 We're using the fantastic `gunicorn <http://gunicorn.org>` WSGI server
 with regular plain-jane vanilla sync workers and we're building a web
 application where users upload lots of really big files.
 
-So on busy days, our web application could get locked up when too many
-users try to upload too many really big files.
+Remember that with a synchronous worker, when a user makes a request,
+that request completely ties up the back-end worker process until it
+replies.  That's why you run a bunch of sync workers.  A request that
+comes in will get handled by one of the idle workers -- as long as
+somebody is idle.
 
-Remember that with a synchronous worker, that means when a user makes a
-request, that request completely ties up the back-end worker process.
+When too many users try to upload too many really big files at the same
+time, then all of the workers could be tied up, and the application
+would become unresponsive.
 
-So in the worst case, on a busy day, our application could become very
-unresponsive.
+We could always just keep a ton of web application processes around, so
+that no matter how busy the application gets, we always have some idle
+workers, but that's a worst-case solution.  That's like dealing with a
+weight problem by buying a bigger pair of pants.
 
-We could always just spin up a ton of web application boxes, so that no
-matter how busy the application gets, we always have slack, but that's
-wasteful.  We don't like paying a lot for application hosting.
-
+Solution
+========
 
 
 
@@ -27,25 +78,19 @@ wasteful.  We don't like paying a lot for application hosting.
 What about using async workers?
 ===============================
 
-
 Here's the typical use case for async workers: a request comes in and
-and you need to talk to some remote API before you can reply.
+and you need to talk to some remote API before you can reply, and that
+API sometimes takes a second to respond.
 
-And that API sometimes takes a second to respond.
+After sending the message to the API, your worker is just sitting there
+idly, waiting for a reply.
 
-So, you use gevent (or anybody else) to talk to that remote API.
-
-While the same process is waiting for a response, it goes back to handling
-requests.
+An async worker can go back to answer other requests while waiting for
+that API to finish.
 
 Under the hood, these async libraries all monkey-patch stuff like the
 socket library, so that when you read or write from a socket, you
 automatically yield.
-
-It would be nice if I could use something like gevent so that while a
-web worker is blocking on IO, while the data is streaming from the
-browser to the server, the web worker could still respond other requests
-in the meanwhile.
 
 Here's the problem that we ran into (which is likely totally fixable, or
 even never was broken).
@@ -54,12 +99,18 @@ We're using the excellent werkzeug library to parse file uploads.  It
 internally pulls data from the socket named "wsgi.input" passed in with
 the WSGI environ.
 
-But the werkzeug code doesn't know it is being run inside a gunicorn
-async gevent worker.
+Reading from that wsgi.input socket doesn't seem to yield out control,
+so while our async worker was reading the gigantic file being uploaded,
+even though the async worker was idle, it was not switching to go back
+and answer other requests.
 
 We couldn't figure out a nice way to force the werkzeug request object
-to intermittently yield while reading from the wsgi.input socket.
+to intermittently yield while reading from the wsgi.input socket.  We
+can't always force it to do this -- lots of people use werkzeug without
+also using gevent.
 
+The werkzeug code doesn't know it is being run inside a gunicorn
+async gevent worker.
 
 
 

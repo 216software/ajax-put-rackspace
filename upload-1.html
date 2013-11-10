@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>Upload a file straight to rackspace</title>
+
+<link
+    href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"
+    rel='stylesheet'
+    type="text/css">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Upload a file straight to rackspace</h1>
+
+<p>upload URL: {0}
+
+<p>
+<label>Pick a file to upload
+<input id="upfile" type="file" name="upfile" />
+</label>
+
+<div id="progress-bar" class="progress">
+<div class="progress-bar"></div>
+</div>
+
+</div>
+
+<script type="text/javascript"
+    src="http://codeorigin.jquery.com/jquery-2.0.3.min.js"></script>
+
+<script type="text/javascript"
+    src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function () {{
+
+    $("#upfile").on('change', function (e) {{
+
+        console.debug('User just picked this file...');
+        console.debug(this.files[0]);
+
+        var fr = new FileReader();
+
+        // This is gnarly.  I'm making a function that returns a new
+        // function.  This lets us keep track of stuff.
+        fr.onload = (function (file_object, input_file_node) {{
+
+            return function (e) {{
+
+                console.debug('Finished reading!');
+                console.debug(file_object);
+
+                // Send the file to rackspace.
+                $.ajax({{
+
+                    // Define our xhr instance so that we can add a
+                    // "progress" event, so that we can fill out the
+                    // progress bar.
+                    xhr: function() {{
+
+                        var xhr = new window.XMLHttpRequest();
+
+                        // Upload progress
+                        xhr.upload.addEventListener("progress",
+
+                            function(evt) {{
+
+                                if (evt.lengthComputable) {{
+
+                                    var percentComplete = evt.loaded /
+    evt.total;
+
+                                    my_progress_bar.css('width',
+                                        String(100*percentComplete) + "%");
+
+                                }}
+}},
+                            false);
+
+                        return xhr;
+}},
+
+                    url: $(input_file_node).data('upload_url'),
+                    type: 'PUT',
+                    cache: false,
+                    data: fr.result,
+                    contentType: file_type,
+                    processData: false,
+
+                    success: function (data) {{
+
+                        // Now tell the server that the upload was a
+    success.
+                        $.ajax({{
+                            url: '/track-rackspace-upload',
+                            type: 'POST',
+                            data: {{
+                                container: binder_id,
+                                object_name: file_uuid,
+                                pretty_filename: file_name,
+                                binder_id: binder_id,
+                                folder_id: folder_id,
+                                file_type: file_type}},
+
+                            success: function (data) {{
+
+                                // Now reload the page!
+                                window.location.reload();
+
+                            }}
+                        }});
+
+                    }},
+
+                    error: function (data) {{
+                    }}
+                    }});
+
+                }};
+
+}})(this.files[0], this);
+
+        fr.readAsArrayBuffer(this.files[0]);
+
+}});
+
+}});
+</script>
+
+</body>
+
+</html>
