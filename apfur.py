@@ -18,24 +18,6 @@ def parse_args():
 
     return ap.parse_args()
 
-
-def create_container(rackspace_username, rackspace_API_key):
-
-    pyrax.set_setting('identity_type',  'rackspace')
-
-    pyrax.set_credentials(
-        rackspace_username,
-        rackspace_API_key,
-        region="ORD")
-
-    logging.info("Set settings and credentials on pyrax")
-
-    # It is safe to run create_container even if the container already
-    # exists.
-    uploads_container = pyrax.cloudfiles.create_container('uploads')
-
-    return uploads_container
-
 def serve_upload_page_1(upload_url):
 
     class MyApp(object):
@@ -67,12 +49,26 @@ if __name__ == '__main__':
 
     log.info('Configured logging.')
 
+    # Give credentials to pyrax.
+
+    pyrax.set_setting('identity_type',  'rackspace')
+
+    pyrax.set_credentials(
+        rackspace_username,
+        rackspace_API_key,
+        region="ORD")
+
+    logging.info("Set settings and credentials on pyrax")
+
+    # Now make a container for us to upload to.
+
+    # It is safe to run create_container even if the container already
+    # exists.
+    uploads_container = pyrax.cloudfiles.create_container('uploads')
+
     uploads_container = create_container(
         args.rackspace_username,
         args.rackspace_API_key)
-
-    # Tell this container to accept AJAX requests from
-    # http://sprout.216software.com.
 
     uploads_container.set_metadata({
         'Access-Control-Allow-Origin': 'http://sprout.216software.com:8765'})

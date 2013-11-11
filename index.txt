@@ -9,16 +9,17 @@ We need to let users take a file (possibly a really big file) from their
 hard drive and push it to the `Rackspace Cloud Files storage service
 <http://www.rackspace.com/cloud/files/>`.
 
-Our solution
+Our approach
 ============
 
 **warning: this depends on HTML5 stuff!**
 
 1.  Create a container on rackspace cloudfiles.
 
-2.  Use python to set metadata on that container to allow CORS.
+2.  Set metadata on that container to allow CORS from the domain hosting
+    our HTML file.
 
-3.  Write some python code to build a temp URL for the PUT method.
+3.  Write python code to build a temp URL for the PUT method.
 
 4.  Write HTML to build a simple input type=file widget.
 
@@ -28,6 +29,25 @@ Our solution
 
 6.  Use some more javascript to do an ajax PUT to the temp URL created
     in step 3.
+
+
+The python part
+===============
+
+Working with rackspace is pretty easy, thanks to the fantastic `Pyrax
+<https://github.com/rackspace/pyrax>` package.
+
+
+The javascript part
+===================
+
+
+The fancy javascript part
+=========================
+
+
+
+
 
 
 The conventional approach
@@ -40,12 +60,6 @@ rackspace.
 Maybe to be a little fancier, just the first half happens during during
 the web request, and some unrelated background process uploads the file
 to rackspace later.
-
-
-
-
-
-
 
 The risk of the conventional approach
 =====================================
@@ -69,14 +83,12 @@ that no matter how busy the application gets, we always have some idle
 workers, but that's a worst-case solution.  That's like dealing with a
 weight problem by buying a bigger pair of pants.
 
-Solution
-========
-
-
-
 
 What about using async workers?
 ===============================
+
+Well, first of all, I want to get the files up to rackspace, and this
+way gets that done better.
 
 Here's the typical use case for async workers: a request comes in and
 and you need to talk to some remote API before you can reply, and that
