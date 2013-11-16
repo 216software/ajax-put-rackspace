@@ -35,23 +35,124 @@ The python part
 ===============
 
 Working with rackspace is pretty easy, thanks to the fantastic `Pyrax
-<https://github.com/rackspace/pyrax>` package.
+<https://github.com/rackspace/pyrax>` package.  Here's how to create a
+container in the rackspace cloudfiles service::
 
+    $ pip install pyrax # this takes a while!
+    $ python
+    >>> import pyrax
+    >>> pyrax.set_setting('identity_type',  'rackspace')
+    >>> pyrax.set_credentials(YOUR_USER_NAME, YOUR_API_KEY)
+
+    >>> uploads_container = pyrax.cloudfiles.create_container('uploads')
+
+Don't worry!  Nothing stupid will happen if your "uploads" container
+already exists.  You'll get a reference to the existing container.
+
+Then the last thing we need to do in python is set some metadata, so
+that this container will accept AJAX PUT uploads::
+
+    >>> uploads_container.set_metadata({
+        'Access-Control-Allow-Origin': 'http://example.com'})
+
+Replace example.com with your domain and maybe replace http with https
+if that's how you serve your site.
+
+Next we need to make a URL that we can give to the user's browser and
+say "send your data to this".
+
+    >>> import uuid
+    >>> filename = str(uuid.uuid4())
+    >>> upload_url = pyrax.cloudfiles.get_temp_url(
+        uploads_container, filename, 60*60, method='PUT')
+
+In my situation want every upload to be stored separately, so I'm using
+uuid.uuid4 to make a unique name.
+
+Don't worry about how I'm using ugly-looking uuid filenames.
+
+When I draw download links later, I can set the filename that the
+browser sees to something else entirely.  So even though the file is
+stored internally with a name like::
+
+    e710cbd0-b067-47d5-b18f-422d484c3d7d
+
+when somebody downloads that file, they'll see::
+
+    your-mom-jokes.pdf
+
+The other two arguments to get_temp_url are the time that the URL lives
+for (60*60 means one hour) and the method='PUT' means this is a URL that
+the browser will push to, not pull from.
+
+In other words, after an hour, requests won't succeed, and only PUT
+requests are allowed.
+
+Like I said, the python part is really pretty easy!
+
+
+Security considerations
+=======================
+
+The rackspace cloudfiles servers don't check if the request comes from
+from a user that authenticated with your web application.
+
+So, if a third person eavesdrops on the temporary URL we make, then they
+can use curl or whatever tool they want to push a different file.
+
+When you make a temporary URL, you need to make sure that the right
+person and only the right person gets it.
 
 The javascript part
 ===================
 
+The javascript part is not so fun.  We have to juggle callbacks for a
+bunch of asynchronous calls.
 
-The fancy javascript part
-=========================
+**I would love it if somebody forked this repository and sent me a pull
+request with a more elegant way to handle this stuff.**
+
+Here's what the code does:
+
+*   Sets an event listener on the on <input type="file"> tag.
+
+*   That event listener makes a FileReader instance named fr.
+
+*   Then it sets a callback on the fr instance to object to handle when
+    the fr instance finishes loading a file.
+
+*   Then it tells the fr instance to load in the file chosen by the user
+    in the <input type="file"> tag.
+
+*   When the fr instance finishes reading all the data from inside the
+    file, the onload callback fires.
+
+*   Inside the onload callback, we use the good ol' jQuery $.ajax method
+    to send the data from the file to rackspace.
+
+*   The success callback for $.ajax request in this scenario doesn't do
+    anything interesting.  But in the "real code", I do another AJAX
+    request back to my server to tell the database to record that a file
+    was successfully uploaded to the upload URL.  And I store the
+    original file name and the mime type into the database.
+
+*   It isn't strictly necessary, but I want to show a progress bar in
+    the browser as the file uploads.  So I define my own xhr object for
+    the $.ajax code to use, and that xhr object will spit out a
+    "progress" event.
+
+How to set the filename for downloads
+=====================================
+
+Just build a temp URL, but pass in "GET" for the method.  And then add a
+query-string parameter filename pointing to whatever you want.
 
 
+Alternate solutions
+===================
 
-
-
-
-The conventional approach
-=========================
+Handle the upload and then push to rackspace
+--------------------------------------------
 
 The typical solution involves writing some web application code to
 accept the file upload from the browser, and then upload it up to
@@ -61,8 +162,8 @@ Maybe to be a little fancier, just the first half happens during during
 the web request, and some unrelated background process uploads the file
 to rackspace later.
 
-The risk of the conventional approach
-=====================================
+Risks with this approach
+------------------------
 
 We're using the fantastic `gunicorn <http://gunicorn.org>` WSGI server
 with regular plain-jane vanilla sync workers and we're building a web
@@ -82,6 +183,9 @@ We could always just keep a ton of web application processes around, so
 that no matter how busy the application gets, we always have some idle
 workers, but that's a worst-case solution.  That's like dealing with a
 weight problem by buying a bigger pair of pants.
+
+
+
 
 
 What about using async workers?
@@ -123,7 +227,6 @@ also using gevent.
 
 The werkzeug code doesn't know it is being run inside a gunicorn
 async gevent worker.
-
 
 
 
