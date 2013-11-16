@@ -61,18 +61,21 @@ The python part
 
 The Pyrax package made this easy.
 
-Here's how to create a container in the rackspace cloudfiles service::
+Here's how to work with pyrax::
 
     $ pip install pyrax # this takes a while!
     $ python
     >>> import pyrax
     >>> pyrax.set_setting('identity_type',  'rackspace')
-    >>> pyrax.set_credentials(YOUR_USER_NAME, YOUR_API_KEY)
+    >>> pyrax.set_credentials(YOUR_USER_NAME, YOUR_API_KEY, region="ORD")
+
+You might need to set the region to something else besides ORD.
+
+Now, make the container.  Don't worry!  Nothing stupid will happen if
+your "uploads" container already exists.  You'll get a reference to the
+existing container::
 
     >>> uploads_container = pyrax.cloudfiles.create_container('uploads')
-
-Don't worry!  Nothing stupid will happen if your "uploads" container
-already exists.  You'll get a reference to the existing container.
 
 Next set some metadata so that the browser will allow cross-domain
 AJAX::
@@ -121,17 +124,12 @@ How to set the filename for downloads
 Don't worry about how I'm using ugly-looking uuid filenames in the
 upload URL.
 
-You can build temporary URLs with any name you want.
-
-You just need to add a query-string parameter "filename" to the link,
-like this::
+You can build links to the actual file with any name you want.  You just
+need to add a query-string parameter "filename" to the link, like this::
 
     <a href="{download_url}&filename=jokes-about-your-mom.pdf">download</a>
 
 The relevant rackspace documentation is `here <http://docs.rackspace.com/files/api/v1/cf-devguide/content/TempURL_File_Name_Overrides-d1e213.html>`.
-
-I suspect there's a bunch of neat stuff like this, like manually setting
-mime types, or whatever.
 
 The javascript part
 ===================
@@ -146,21 +144,21 @@ Here's what the code does:
 
 *   Sets an event listener on the on <input type="file"> tag::
 
-    $("#upfile").on('change', function (e) {...
+        $("#upfile").on('change', function (e) {...
 
 *   That event listener makes a FileReader instance named fr::
 
-    var fr = new FileReader();
+        var fr = new FileReader();
 
 *   Then it sets a callback on the fr instance to handle when
     the fr instance finishes loading a file::
 
-    fr.onload = (function (file_object, input_file_node) {...
+        fr.onload = (function (file_object, input_file_node) {...
 
 *   Then it tells the fr instance to load in the file chosen by the user
     in the <input type="file"> tag::
 
-    fr.readAsArrayBuffer(this.files[0]);
+        fr.readAsArrayBuffer(this.files[0]);
 
 *   When the fr instance finishes reading all the data from inside the
     file, the onload callback fires.
@@ -170,11 +168,11 @@ Here's what the code does:
     figure out that to get the data, we needed to use the .result
     attribute::
 
-    $.ajax({
-        ...
-        data: fr.result,
-        ...
-    });
+        $.ajax({
+            ...
+            data: fr.result,
+            ...
+        });
 
 *   The success callback for $.ajax request in this scenario doesn't do
     anything interesting.  It just un-hides the link to the download

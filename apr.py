@@ -28,7 +28,7 @@ def serve_upload_page(upload_url, download_url):
 
         def render_upload_page(self):
 
-            page = open('./upload-1.html').read()
+            page = open('./upload.html').read()
 
             return page.format(
                 upload_url=self.upload_url,
