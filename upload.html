@@ -58,8 +58,6 @@ $(document).ready(function () {{
 
         var fr = new FileReader();
 
-        // This is gnarly.  I'm making a function that returns a new
-        // function.  This lets us keep track of stuff.
         fr.onload = (function (file_object, input_file_node) {{
 
             return function (e) {{

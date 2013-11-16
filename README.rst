@@ -14,20 +14,23 @@ We don't want the upload traffic anywhere near our servers.
 Run the example
 ===============
 
-The apr.py script depends on the the excellent `Pyrax
-<https://github.com/rackspace/pyrax>` package, so install that first,
-and then do this stuff::
+If you don't have a rackspace account, you're not going to be able to
+run this example, so go make one.
+
+Also, my script depends on the `Pyrax
+<https://github.com/rackspace/pyrax>` package, so install that, and then
+do this stuff::
 
 $ git clone git@github.com:216software/ajax-put-rackspace.git
 $ cd ajax-put-rackspace
 $ python apr.py YOUR_RACKSPACE_USER_NAME YOUR_API_KEY
 
-Then in your browser, open up http://localhost:8765 and you should see
-something like the screenshot in before-upload.png
+Now open up http://localhost:8765 and you should see something like the
+screenshot in before-upload.png
 
 .. image:: before-upload.png
 
-Now upload a file.  And hopefully, you'll watch a pretty blue scrollbar
+Now upload a file.  Hopefully, you'll watch a pretty blue scrollbar
 track the upload's progress, and when it's done, you see something like
 what's in this screenshot:
 
@@ -134,8 +137,8 @@ The relevant rackspace documentation is `here <http://docs.rackspace.com/files/a
 The javascript part
 ===================
 
-The javascript part is not so fun.  We have to juggle callbacks for a
-bunch of asynchronous calls.
+All the javascript lives in a big blob at the end of upload.html.  It's
+a tangled mess of callbacks and closure variables.
 
 **I would love it if somebody forked this repository and sent me a pull
 request with a more elegant way to handle this stuff.**
@@ -218,6 +221,9 @@ Here's what the code does:
             return xhr;
             },
 
+And that's about it!  If the example doesn't work for you, please let me
+know.  And I hope somebody can clean up the javascript!  Triple-nested
+callbacks ain't my idea of a good time.
 
 Alternate solutions
 ===================
@@ -226,8 +232,8 @@ Handle the upload and then push to rackspace
 --------------------------------------------
 
 The rookie solution involves writing some web application code to accept
-the file upload from the browser, save it to /tmp, and then upload it to
-rackspace.
+the file upload from the browser, save it to /tmp (or hell, just store
+it in memory), and then upload it to rackspace.
 
 To be a little faster, perhaps just the first half happens during during
 the web request, and some unrelated background process uploads the file
@@ -262,39 +268,29 @@ What about using async workers?
 Well, first of all, I want to get the files up to rackspace, and this
 way gets that done better.
 
-Here's the typical use case for async workers: a request comes in and
-and you need to talk to some remote API before you can reply, and that
-API sometimes takes a second to respond.
-
-After sending the message to the API, your worker is just sitting there
-idly, waiting for a reply.
-
-An async worker can go back to answer other requests while waiting for
-that API to finish.
+But in other related scenarios, it would be nice to have the uploaded
+data in the application server.
 
 Under the hood, these async libraries all monkey-patch stuff like the
 socket library, so that when you read or write from a socket, you
-automatically yield.
+automatically yield, so that other coroutines can use the CPU while you
+block for IO to complete.
 
 Here's the problem that we ran into (which is likely totally fixable, or
 even never was broken).
 
-We're using the excellent werkzeug library to parse file uploads.  It
-internally pulls data from the socket named "wsgi.input" passed in with
-the WSGI environ.
+We're using the werkzeug library to parse file uploads.  It internally
+pulls data from the socket named "wsgi.input" passed in with the WSGI
+environ.
 
-Reading from that wsgi.input socket doesn't seem to yield out control,
-so while our async worker was reading the gigantic file being uploaded,
-even though the async worker was idle, it was not switching to go back
-and answer other requests.
+We couldn't figure out how to force the werkzeug request object to
+intermittently yield to the gevent scheduler while reading from the
+wsgi.input socket.
 
-We couldn't figure out a nice way to force the werkzeug request object
-to intermittently yield while reading from the wsgi.input socket.  We
-can't always force it to do this -- lots of people use werkzeug without
-also using gevent.
+So while our async worker was reading the gigantic file being uploaded,
+even though the async worker was blocking on IO, it was not switching to
+go back and answer other requests.
 
-The werkzeug code doesn't know it is being run inside a gunicorn
-async gevent worker.
-
+I'd love to learn how to fix this, so please, help me out.
 
 .. vim: set syntax=rst:
