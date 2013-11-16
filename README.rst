@@ -2,6 +2,9 @@
 Upload files directly to Rackspace from the browser
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 
+This is available on github:
+https://github.com/216software/ajax-put-rackspace
+
 Background
 ==========
 
@@ -166,9 +169,10 @@ Here's what the code does:
 *   When the fr instance finishes reading all the data from inside the
     file, the onload callback fires.
 
-*   Inside the onload callback, we use the good ol' jQuery $.ajax method
-    to send the data from the file to rackspace.  It took us a while to
-    figure out that the .result attribute holds data read in from the
+*   Inside the onload callback, we use the `good ol' jQuery $.ajax
+    method <http://api.jquery.com/jQuery.ajax/>` to send the data from
+    the file to rackspace.  It took us a while to figure out that the
+    .result attribute holds data read in from the
     file::
 
         $.ajax({
@@ -289,3 +293,4 @@ go back and answer other requests.
 I'd love to learn how to fix this, so please, help me out.
 
 .. vim: set syntax=rst:
+
