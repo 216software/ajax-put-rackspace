@@ -31,6 +31,12 @@ Our approach
     in step 3.
 
 
+The example
+===========
+
+
+
+
 The python part
 ===============
 
@@ -69,11 +75,10 @@ say "send your data to this".
 In my situation want every upload to be stored separately, so I'm using
 uuid.uuid4 to make a unique name.
 
-Don't worry about how I'm using ugly-looking uuid filenames.
-
-When I draw download links later, I can set the filename that the
-browser sees to something else entirely.  So even though the file is
-stored internally with a name like::
+Don't worry about how I'm using ugly-looking uuid filenames.  When I
+draw download links later, I can set the filename that the browser sees
+to something else entirely.  So even though the file is stored
+internally with a name like::
 
     e710cbd0-b067-47d5-b18f-422d484c3d7d
 
@@ -89,7 +94,6 @@ In other words, after an hour, requests won't succeed, and only PUT
 requests are allowed.
 
 Like I said, the python part is really pretty easy!
-
 
 Security considerations
 =======================
@@ -144,8 +148,13 @@ Here's what the code does:
 How to set the filename for downloads
 =====================================
 
-Just build a temp URL, but pass in "GET" for the method.  And then add a
-query-string parameter filename pointing to whatever you want.
+If you want to alter the name of the Build a temp URL, but pass in "GET"
+for the method.  And then add a query-string parameter filename pointing
+to whatever you want.
+
+
+
+
 
 
 Alternate solutions

@@ -18,7 +18,7 @@ def parse_args():
 
     return ap.parse_args()
 
-def serve_upload_page_1(upload_url):
+def serve_upload_page(upload_url):
 
     class MyApp(object):
 
@@ -41,6 +41,7 @@ def serve_upload_page_1(upload_url):
     logging.info("About to fire up the wsgi server...")
     s.serve_forever()
 
+
 if __name__ == '__main__':
 
     args = parse_args()
@@ -54,8 +55,8 @@ if __name__ == '__main__':
     pyrax.set_setting('identity_type',  'rackspace')
 
     pyrax.set_credentials(
-        rackspace_username,
-        rackspace_API_key,
+        args.rackspace_username,
+        args.rackspace_API_key,
         region="ORD")
 
     logging.info("Set settings and credentials on pyrax")
@@ -66,12 +67,8 @@ if __name__ == '__main__':
     # exists.
     uploads_container = pyrax.cloudfiles.create_container('uploads')
 
-    uploads_container = create_container(
-        args.rackspace_username,
-        args.rackspace_API_key)
-
     uploads_container.set_metadata({
-        'Access-Control-Allow-Origin': 'http://sprout.216software.com:8765'})
+        'Access-Control-Allow-Origin': 'http://localhost:8765'})
 
     filename = str(uuid.uuid4())
 
@@ -82,4 +79,4 @@ if __name__ == '__main__':
 
     log.debug('upload_url: {0}'.format(upload_url))
 
-    serve_upload_page_1(upload_url)
+    serve_upload_page(upload_url)
