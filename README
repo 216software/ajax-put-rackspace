@@ -30,9 +30,26 @@ Our approach
 6.  Use some more javascript to do an ajax PUT to the temp URL created
     in step 3.
 
+Run the example
+===============
 
-The example
-===========
+The apr.py script depends on the the fantastic `Pyrax
+<https://github.com/rackspace/pyrax>` package, so install that first,
+and then do this stuff::
+
+$ git clone git@github.com:216software/ajax-put-rackspace.git
+$ cd ajax-put-rackspace
+$ python apr.py YOUR_RACKSPACE_USER_NAME YOUR_API_KEY
+
+Then in your browser, open up http://localhost:8765 and you should see
+something like the screenshot in before-upload.png
+
+.. image:: before-upload.png
+
+Now upload a file.  And hopefully, you'll be able to watch a pretty blue
+scrollbar track the upload's progress.
+
+.. image:: after-upload.png
 
 
 
@@ -40,8 +57,8 @@ The example
 The python part
 ===============
 
-Working with rackspace is pretty easy, thanks to the fantastic `Pyrax
-<https://github.com/rackspace/pyrax>` package.  Here's how to create a
+
+Here's how to create a
 container in the rackspace cloudfiles service::
 
     $ pip install pyrax # this takes a while!
