@@ -18,24 +18,28 @@ def parse_args():
 
     return ap.parse_args()
 
-def serve_upload_page(upload_url):
+def serve_upload_page(upload_url, download_url):
 
     class MyApp(object):
 
-        def __init__(self, upload_url):
+        def __init__(self, upload_url, download_url):
             self.upload_url = upload_url
+            self.download_url = download_url
 
         def render_upload_page(self):
 
             page = open('./upload-1.html').read()
-            return page.format(self.upload_url)
+
+            return page.format(
+                upload_url=self.upload_url,
+                download_url=self.download_url)
 
         def __call__(self, environ, start_response):
 
             start_response('200 OK', [])
             return [self.render_upload_page()]
 
-    app = MyApp(upload_url)
+    app = MyApp(upload_url, download_url)
     s = wsgiref.simple_server.make_server('', 8765, app)
 
     logging.info("About to fire up the wsgi server...")
@@ -79,4 +83,9 @@ if __name__ == '__main__':
 
     log.debug('upload_url: {0}'.format(upload_url))
 
-    serve_upload_page(upload_url)
+    download_url = pyrax.cloudfiles.get_temp_url(
+        uploads_container, filename, 60*60, method='GET')
+
+    log.debug('download_url: {0}'.format(download_url))
+
+    serve_upload_page(upload_url, download_url)

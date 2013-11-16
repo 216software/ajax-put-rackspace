@@ -21,7 +21,7 @@
 
 <h1>Upload a file straight to rackspace</h1>
 
-<p>upload URL: {0}
+<p>upload URL: {upload_url}
 
 <p>
 <label>Pick a file to upload
@@ -31,6 +31,14 @@
 <div id="progress-bar" class="progress">
 <div class="progress-bar"></div>
 </div>
+
+<div id="download_url" class="collapse">
+<p>download URL: {download_url}&amp;filename=jokes-about-your-mom.pdf
+<p>
+<a class="btn btn-default"
+    href="{download_url}&filename=jokes-about-your-mom.pdf">DOWNLOAD</a>
+</div>
+
 
 </div>
 
@@ -91,7 +99,7 @@ $(document).ready(function () {{
                         return xhr;
                         }},
 
-                    url: '{0}',
+                    url: '{upload_url}',
                     type: 'PUT',
                     cache: false,
                     data: fr.result,
@@ -100,7 +108,7 @@ $(document).ready(function () {{
 
                     success: function (data) {{
                         console.debug('Upload complete -- do what you want here');
-
+                        $("div#download_url").collapse('show');
                     }},
 
                     error: function (data) {{
