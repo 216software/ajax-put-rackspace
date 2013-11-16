@@ -168,8 +168,8 @@ Here's what the code does:
 
 *   Inside the onload callback, we use the good ol' jQuery $.ajax method
     to send the data from the file to rackspace.  It took us a while to
-    figure out that to get the data, we needed to use the .result
-    attribute::
+    figure out that the .result attribute holds data read in from the
+    file::
 
         $.ajax({
             ...
@@ -177,7 +177,7 @@ Here's what the code does:
             ...
         });
 
-*   The success callback for $.ajax request in this scenario doesn't do
+*   The success callback for $.ajax request in this example code doesn't do
     anything interesting.  It just un-hides the link to the download
     URL::
 
@@ -186,15 +186,9 @@ Here's what the code does:
             $("div#download_url").collapse('show');
         },
 
-    But in my "real code", I do another AJAX request back to my server
-    to tell the database to record that a file was successfully uploaded
-    to the upload URL.  And I store the original file name and the mime
-    type into the database.
-
-*   It isn't strictly necessary, but I want to show a progress bar in
-    the browser as the file uploads.  So I made my own xhr object for
-    the $.ajax code to use, and that xhr object notice the "progress"
-    event::
+*   It isn't necessary, but I want to show a progress bar in the browser
+    as the file uploads.  So I made my own xhr object for the $.ajax code to
+    use, and that xhr object notices the "progress" event::
 
         xhr: function() {
 
@@ -224,6 +218,7 @@ Here's what the code does:
 And that's about it!  If the example doesn't work for you, please let me
 know.  And I hope somebody can clean up the javascript!  Triple-nested
 callbacks ain't my idea of a good time.
+
 
 Alternate solutions
 ===================
