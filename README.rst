@@ -135,6 +135,8 @@ need to add a query-string parameter "filename" to the link, like this::
 
     <a href="{download_url}&filename=jokes-about-your-mom.pdf">download</a>
 
+Caveat: You'll have to do a little bit more work here if you want your download extension to match your uploaded file's extension. If you upload something other than a PDF and try to download it with this extension, your operating system might get confused.
+
 The relevant rackspace documentation is `here <http://docs.rackspace.com/files/api/v1/cf-devguide/content/TempURL_File_Name_Overrides-d1e213.html>`.
 
 The javascript part
