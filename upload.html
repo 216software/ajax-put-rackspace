@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Upload a file straight to rackspace</title>
+    <title>Upload a file straight to Rackspace Cloud Files</title>
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -11,7 +11,7 @@
 
     <h1>Upload a file straight to rackspace</h1>
 
-    <p>upload URL: {upload_url}
+    <p>Upload URL: {upload_url}
 
     <p>
     <label>Pick a file to upload
@@ -23,7 +23,7 @@
     </div>
 
     <div id="download_url" class="collapse">
-        <p>download URL: {download_url}&amp;filename=jokes-about-your-mom.pdf
+        <p>Download URL: {download_url}&amp;filename=jokes-about-your-mom.pdf
         <p><a class="btn btn-default" href="{download_url}&filename=jokes-about-your-mom.pdf">DOWNLOAD</a>
     </div>
 
@@ -57,7 +57,6 @@ $(document).ready(function() {{
     $("#upfile").on('change', function (e) {{
         var fr = new FileReader();
         fr.onload = function(e) {{
-            // Send the file to rackspace.
             $.ajax({{
                 xhr: xhr_with_progress,
                 url: '{upload_url}',
