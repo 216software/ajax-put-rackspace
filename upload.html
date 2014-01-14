@@ -1,126 +1,80 @@
 <!DOCTYPE html>
-
 <html>
-
 <head>
-
-<title>Upload a file straight to rackspace</title>
-
-<link
-    href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"
-    rel='stylesheet'
-    type="text/css">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <title>Upload a file straight to Rackspace Cloud Files</title>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-
 <body>
 
 <div class="container">
 
-<h1>Upload a file straight to rackspace</h1>
+    <h1>Upload a file straight to rackspace</h1>
 
-<p>upload URL: {upload_url}
+    <p>Upload URL: {upload_url}
 
-<p>
-<label>Pick a file to upload
-<input id="upfile" type="file" name="upfile" />
-</label>
+    <p>
+    <label>Pick a file to upload
+        <input id="upfile" type="file" name="upfile" />
+    </label>
 
-<div id="progress-bar" class="progress">
-<div class="progress-bar"></div>
-</div>
+    <div id="progress-bar" class="progress">
+        <div class="progress-bar"></div>
+    </div>
 
-<div id="download_url" class="collapse">
-<p>download URL: {download_url}&amp;filename=jokes-about-your-mom.pdf
-<p>
-<a class="btn btn-default"
-    href="{download_url}&filename=jokes-about-your-mom.pdf">DOWNLOAD</a>
-</div>
+    <div id="download_url" class="collapse">
+        <p>Download URL: {download_url}&amp;filename=jokes-about-your-mom.pdf
+        <p><a class="btn btn-default" href="{download_url}&filename=jokes-about-your-mom.pdf">DOWNLOAD</a>
+    </div>
 
-<p><a href="https://github.com/216software/ajax-put-rackspace">code
-available here on github</a>
+    <p><a href="https://github.com/216software/ajax-put-rackspace">code available here on github</a>
 
 </div>
 
-<script type="text/javascript"
-    src="http://codeorigin.jquery.com/jquery-2.0.3.min.js"></script>
-
-<script type="text/javascript"
-    src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="//codeorigin.jquery.com/jquery-2.0.3.min.js"></script>
+<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
 
 <script type="text/javascript">
-$(document).ready(function () {{
+
+// Custom jQuery xhr instance to support our progress bar.
+var xhr_with_progress = function() {{
+    var xhr = new window.XMLHttpRequest();
+    xhr.upload.addEventListener("progress",
+        function(evt) {{
+            if (!evt.lengthComputable) return;
+            var percentComplete = evt.loaded / evt.total;
+            $("#progress-bar div.progress-bar").css('width', String(100*percentComplete) + "%");
+        }}, false);
+    return xhr;
+}};
+
+$(document).ready(function() {{
+    if (!window['FileReader']) {{
+        alert('Browser does not support HTML5 FileReader. Cannot continue.');
+        return;
+    }}
 
     $("#upfile").on('change', function (e) {{
-
-        console.debug('User just picked this file...');
-        console.debug(this.files[0]);
-
         var fr = new FileReader();
+        fr.onload = function(e) {{
+            $.ajax({{
+                xhr: xhr_with_progress,
+                url: '{upload_url}',
+                type: 'PUT',
+                cache: false,
+                data: fr.result,
+                processData: false,
 
-        fr.onload = (function (file_object, input_file_node) {{
+                success: function (data) {{
+                    console.debug('Upload complete -- do what you want here');
+                    $("div#download_url").collapse('show');
+                }},
 
-            return function (e) {{
-
-                console.debug('Finished reading!');
-                console.debug(file_object);
-
-                // Send the file to rackspace.
-                $.ajax({{
-
-                    // Define our xhr instance so that we can add a
-                    // "progress" event, so that we can fill out the
-                    // progress bar.
-                    xhr: function() {{
-
-                        var xhr = new window.XMLHttpRequest();
-
-                        // Upload progress
-                        xhr.upload.addEventListener("progress",
-
-                            function(evt) {{
-
-                                if (evt.lengthComputable) {{
-
-                                    var percentComplete = evt.loaded / evt.total;
-
-                                    console.debug('percentComplete: ' + percentComplete);
-
-                                    $("#progress-bar div.progress-bar").css('width',
-                                        String(100*percentComplete) + "%");
-
-                                }}
-                            }},
-
-                            false);
-
-                        return xhr;
-                        }},
-
-                    url: '{upload_url}',
-                    type: 'PUT',
-                    cache: false,
-                    data: fr.result,
-                    // contentType: file_type,
-                    processData: false,
-
-                    success: function (data) {{
-                        console.debug('Upload complete -- do what you want here');
-                        $("div#download_url").collapse('show');
-                    }},
-
-                    error: function (data) {{
-                    }}
-                }});
-
-            }};
-
-        }})(this.files[0], this);
-
+                error: function (data) {{
+                }}
+            }});
+        }};
         fr.readAsArrayBuffer(this.files[0]);
-
     }});
 
 }});
