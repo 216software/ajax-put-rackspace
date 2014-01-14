@@ -37,28 +37,28 @@
 <script type="text/javascript">
 
 // Custom jQuery xhr instance to support our progress bar.
-var xhr_with_progress = function() {
+var xhr_with_progress = function() {{
     var xhr = new window.XMLHttpRequest();
     xhr.upload.addEventListener("progress",
-        function(evt) {
+        function(evt) {{
             if (!evt.lengthComputable) return;
             var percentComplete = evt.loaded / evt.total;
             $("#progress-bar div.progress-bar").css('width', String(100*percentComplete) + "%");
-        }, false);
+        }}, false);
     return xhr;
-};
+}};
 
-$(document).ready(function() {
-    if (!window['FileReader']) {
+$(document).ready(function() {{
+    if (!window['FileReader']) {{
         alert('Browser does not support HTML5 FileReader. Cannot continue.');
         return;
-    }
+    }}
 
-    $("#upfile").on('change', function (e) {
+    $("#upfile").on('change', function (e) {{
         var fr = new FileReader();
-        fr.onload = function(e) {
+        fr.onload = function(e) {{
             // Send the file to rackspace.
-            $.ajax({
+            $.ajax({{
                 xhr: xhr_with_progress,
                 url: '{upload_url}',
                 type: 'PUT',
@@ -66,19 +66,19 @@ $(document).ready(function() {
                 data: fr.result,
                 processData: false,
 
-                success: function (data) {
+                success: function (data) {{
                     console.debug('Upload complete -- do what you want here');
                     $("div#download_url").collapse('show');
-                },
+                }},
 
-                error: function (data) {
-                }
-            });
-        };
+                error: function (data) {{
+                }}
+            }});
+        }};
         fr.readAsArrayBuffer(this.files[0]);
-    });
+    }});
 
-});
+}});
 </script>
 
 </body>
