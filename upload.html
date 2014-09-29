@@ -49,32 +49,30 @@ var xhr_with_progress = function() {{
 }};
 
 $(document).ready(function() {{
-    if (!window['FileReader']) {{
-        alert('Browser does not support HTML5 FileReader. Cannot continue.');
+    if (!window['File']) {{
+        alert('Browser does not support HTML5 File API. Cannot continue.');
         return;
     }}
 
     $("#upfile").on('change', function (e) {{
-        var fr = new FileReader();
-        fr.onload = function(e) {{
-            $.ajax({{
-                xhr: xhr_with_progress,
-                url: '{upload_url}',
-                type: 'PUT',
-                cache: false,
-                data: fr.result,
-                processData: false,
+        var file = this.files[0];
+        $.ajax({{
+            xhr: xhr_with_progress,
+            url: '{upload_url}',
+            type: 'PUT',
+            data: file,
+            cache: false,
+            contentType: false,
+            processData: false,
 
-                success: function (data) {{
-                    console.debug('Upload complete -- do what you want here');
-                    $("div#download_url").collapse('show');
-                }},
+            success: function (data) {{
+                console.debug('Upload complete -- do what you want here');
+                $("div#download_url").collapse('show');
+            }},
 
-                error: function (data) {{
-                }}
-            }});
-        }};
-        fr.readAsArrayBuffer(this.files[0]);
+            error: function (data) {{
+            }}
+        }});
     }});
 
 }});
