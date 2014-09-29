@@ -55,12 +55,10 @@ How we did it
 4.  Write HTML to build a simple input type=file widget.
 
 5.  Write javascript so that when a user picks a file with the file
-    input tag, we use a `FileReader
-    <https://developer.mozilla.org/en-US/docs/Web/API/FileReader>` to
-    read the contents of the file into a buffer.
+    input tag, and we capture that file.
 
 6.  Use more javascript to do an ajax PUT to the temp URL created
-    in step 3.
+    in step 3 and passing the captured file as the data.
 
 The python part
 ===============
@@ -154,32 +152,17 @@ Here's what the code does:
 
         $("#upfile").on('change', function (e) {...
 
-*   That event listener makes a FileReader instance named fr::
+*   That event listener contains the files. Get the first file:
 
-        var fr = new FileReader();
+        var file = this.files[0];
 
-*   Then it sets a callback on the fr instance to handle when
-    the fr instance finishes loading a file::
-
-        fr.onload = (function (file_object, input_file_node) {...
-
-*   Then it tells the fr instance to load in the file chosen by the user
-    in the <input type="file"> tag::
-
-        fr.readAsArrayBuffer(this.files[0]);
-
-*   When the fr instance finishes reading all the data from inside the
-    file, the onload callback fires.
-
-*   Inside the onload callback, we use the `good ol' jQuery $.ajax
+*   Use the `good ol' jQuery $.ajax
     method <http://api.jquery.com/jQuery.ajax/>` to send the data from
-    the file to rackspace.  It took us a while to figure out that the
-    .result attribute holds data read in from the
-    file::
+    the file to rackspace::
 
         $.ajax({
             ...
-            data: fr.result,
+            data: file,
             ...
         });
 
